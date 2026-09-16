@@ -1,0 +1,10 @@
+{
+  "name": "quantum-flow-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build:client": "cd client && npm install && npm run build",
+    "build:server": "cd server && npm install && npm run build",
+    "vercel-build": "cd server && npx prisma generate && cd ../client && npm run build"
+  }
+}

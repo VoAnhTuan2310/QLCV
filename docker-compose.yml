@@ -1,0 +1,63 @@
+# ==========================================
+# Fullstack App - Production Docker Compose
+# ==========================================
+version: '3.8'
+
+services:
+  # Database Service (PostgreSQL)
+  postgres:
+    image: postgres:15-alpine
+    container_name: fullstack_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-app_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-app_password}
+      POSTGRES_DB: ${POSTGRES_DB:-fullstack_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app_network
+
+  # Backend Service (Node.js API)
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: fullstack_server
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: ${SERVER_PORT:-5000}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-app_user}:${POSTGRES_PASSWORD:-app_password}@postgres:5432/${POSTGRES_DB:-fullstack_db}?schema=public
+      JWT_SECRET: ${JWT_SECRET:-supersecretkey}
+      CLIENT_URL: ${CLIENT_URL:-http://localhost:80}
+    ports:
+      - "5000:5000"
+    depends_on:
+      - postgres
+    networks:
+      - app_network
+
+  # Frontend Service (React + Nginx)
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: fullstack_client
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+    networks:
+      - app_network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  app_network:
+    driver: bridge

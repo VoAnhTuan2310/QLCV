@@ -1,0 +1,148 @@
+// ==============================================================================
+// Prisma Schema - Task, Finance & Notes Management System (Production Ready)
+// Features: High-performance indexing, relational integrity, soft deletes, Decimal amount
+// ==============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ------------------------------------------------------------------------------
+// ENUMS
+// ------------------------------------------------------------------------------
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+  CANCELLED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+// ------------------------------------------------------------------------------
+// MODELS
+// ------------------------------------------------------------------------------
+
+/// User entity representing authentication and ownership
+model User {
+  id           String        @id @default(uuid())
+  email        String        @unique
+  password     String
+  fullName     String
+  avatarUrl    String?
+  role         Role          @default(USER)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  // Relations
+  tasks        Task[]
+  transactions Transaction[]
+  categories   Category[]
+  notes        Note[]
+
+  @@index([email])
+  @@map("users")
+}
+
+/// Task entity for Task Management feature
+model Task {
+  id          String       @id @default(uuid())
+  title       String
+  description String?
+  status      TaskStatus   @default(TODO)
+  priority    TaskPriority @default(MEDIUM)
+  dueDate     DateTime?
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  deletedAt   DateTime?
+
+  // Indexes for high frequency queries
+  @@index([userId, status])
+  @@index([userId, dueDate])
+  @@index([userId, priority])
+  @@index([userId, deletedAt])
+  @@map("tasks")
+}
+
+/// Category entity for Finance Management transaction classification
+model Category {
+  id           String          @id @default(uuid())
+  name         String
+  type         TransactionType
+  icon         String?
+  color        String?
+  userId       String
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt @default(now())
+  deletedAt    DateTime?
+
+  // Indexes for querying active categories by user & transaction type
+  @@index([userId, type])
+  @@index([userId, deletedAt])
+  @@map("categories")
+}
+
+/// Transaction entity for Income/Expense tracking
+model Transaction {
+  id          String          @id @default(uuid())
+  amount      Decimal         @db.Decimal(12, 2)
+  type        TransactionType
+  description String?
+  date        DateTime        @default(now())
+  categoryId  String
+  category    Category        @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  userId      String
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  deletedAt   DateTime?
+
+  // Indexes for fast financial analytics & date range queries per user
+  @@index([userId, date])
+  @@index([userId, type])
+  @@index([categoryId])
+  @@index([userId, categoryId])
+  @@index([userId, deletedAt])
+  @@map("transactions")
+}
+
+/// Note entity for Google Keep-style notes
+model Note {
+  id        String    @id @default(uuid())
+  title     String
+  content   String
+  color     String    @default("#ffffff")
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([userId, deletedAt])
+  @@map("notes")
+}
