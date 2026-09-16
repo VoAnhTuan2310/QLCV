@@ -1,5 +1,5 @@
 {
-  "buildCommand": "cd server && npx prisma generate && cd ../client && npm run build",
+  "buildCommand": "cd server && npm install && npx prisma@5 generate && cd ../client && npm install && npm run build",
   "outputDirectory": "client/dist",
   "rewrites": [
     {
