@@ -49,6 +49,24 @@ export const TaskPage: React.FC = () => {
   const [editDescription, setEditDescription] = useState<string>('');
   const [editLoading, setEditLoading] = useState<boolean>(false);
 
+  const formatToDatetimeLocal = (dateStr?: string) => {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return '';
+    const pad = (n: number) => (n < 10 ? '0' + n : n);
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+
+  const formatVietnameseDateTime = (dateStr?: string) => {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return '';
+    const datePart = d.toLocaleDateString('vi-VN');
+    const hours = d.getHours().toString().padStart(2, '0');
+    const minutes = d.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes} - ${datePart}`;
+  };
+
   const fetchTasks = async () => {
     try {
       setLoading(true);
@@ -71,7 +89,10 @@ export const TaskPage: React.FC = () => {
     setNewTitle('');
     setNewDescription('');
     setNewPriority('MEDIUM');
-    setNewDueDate(arg.dateStr);
+    const now = new Date();
+    const pad = (n: number) => (n < 10 ? '0' + n : n);
+    const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    setNewDueDate(arg.dateStr.includes('T') ? arg.dateStr.slice(0, 16) : `${arg.dateStr}T${timeStr}`);
     setIsAddModalOpen(true);
   };
 
@@ -115,7 +136,7 @@ export const TaskPage: React.FC = () => {
     setEditDescription(task.description || '');
     setEditPriority(task.priority);
     setEditStatus(task.status);
-    setEditDueDate(task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '');
+    setEditDueDate(task.dueDate ? formatToDatetimeLocal(task.dueDate) : '');
     setIsDetailModalOpen(false);
     setIsEditModalOpen(true);
   };
@@ -263,7 +284,7 @@ export const TaskPage: React.FC = () => {
                 setNewTitle('');
                 setNewDescription('');
                 setNewPriority('MEDIUM');
-                setNewDueDate(new Date().toISOString().split('T')[0]);
+                setNewDueDate(formatToDatetimeLocal(new Date().toISOString()));
                 setIsAddModalOpen(true);
               }}
               className="px-5 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold text-sm rounded-2xl shadow-lg shadow-indigo-500/25 transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-2"
@@ -348,7 +369,7 @@ export const TaskPage: React.FC = () => {
                       {task.dueDate && (
                         <span className="text-xs text-slate-400 font-medium flex items-center gap-1">
                           <Clock className="w-3.5 h-3.5 text-indigo-400" />
-                          {new Date(task.dueDate).toLocaleDateString('vi-VN')}
+                          {formatVietnameseDateTime(task.dueDate)}
                         </span>
                       )}
                     </div>
@@ -443,10 +464,10 @@ export const TaskPage: React.FC = () => {
 
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-                      Hạn Chót (Due Date)
+                      Ngày & Giờ Thực Hiện
                     </label>
                     <input
-                      type="date"
+                      type="datetime-local"
                       value={newDueDate}
                       onChange={(e) => setNewDueDate(e.target.value)}
                       className="glass-input w-full px-4 py-2.5 text-sm font-semibold"
@@ -576,10 +597,10 @@ export const TaskPage: React.FC = () => {
 
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-                      Hạn Chót (Due Date)
+                      Ngày & Giờ Thực Hiện
                     </label>
                     <input
-                      type="date"
+                      type="datetime-local"
                       value={editDueDate}
                       onChange={(e) => setEditDueDate(e.target.value)}
                       className="glass-input w-full px-4 py-2.5 text-sm font-semibold"
@@ -660,11 +681,11 @@ export const TaskPage: React.FC = () => {
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="font-semibold text-slate-400">Hạn chót:</span>
+                    <span className="font-semibold text-slate-400">Thời gian thực hiện:</span>
                     <span className="font-bold text-slate-700 dark:text-slate-200">
                       {selectedTask.dueDate
-                        ? new Date(selectedTask.dueDate).toLocaleDateString('vi-VN')
-                        : 'Không có'}
+                        ? formatVietnameseDateTime(selectedTask.dueDate)
+                        : 'Chưa đặt'}
                     </span>
                   </div>
                   {selectedTask.description && (
