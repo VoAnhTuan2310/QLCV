@@ -4,9 +4,14 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import { Plus, Calendar as CalendarIcon, LayoutGrid, CheckCircle2, Clock, Trash2, Pencil, Sparkles, X, AlertCircle } from 'lucide-react';
+import { Plus, Calendar as CalendarIcon, LayoutGrid, CheckCircle2, Clock, Trash2, Pencil, Sparkles, X, AlertCircle, Bell, BellRing } from 'lucide-react';
 import { MainLayout } from '../../../components/MainLayout';
 import api from '../../../services/api';
+import {
+  requestNotificationPermission,
+  getNotificationPermissionState,
+  sendBrowserNotification,
+} from '../../../services/notificationHelper';
 
 interface Task {
   id: string;
@@ -25,6 +30,17 @@ export const TaskPage: React.FC = () => {
 
   // View Mode: Calendar or Kanban Cards
   const [viewMode, setViewMode] = useState<'calendar' | 'kanban'>('calendar');
+
+  // Notification & Toast State
+  const [notificationPermission, setNotificationPermission] = useState<
+    NotificationPermission | 'unsupported'
+  >(getNotificationPermissionState());
+  const [activeToast, setActiveToast] = useState<{
+    id: string;
+    title: string;
+    timeStr: string;
+    description?: string;
+  } | null>(null);
 
   // Add Modal State
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
@@ -67,6 +83,16 @@ export const TaskPage: React.FC = () => {
     return `${hours}:${minutes} - ${datePart}`;
   };
 
+  const handleToggleNotificationPermission = async () => {
+    const granted = await requestNotificationPermission();
+    setNotificationPermission(getNotificationPermissionState());
+    if (granted) {
+      sendBrowserNotification('🔔 Nhắc Nhở Công Việc Đã Bật', {
+        body: 'Bạn sẽ nhận được thông báo trình duyệt và âm thanh khi đến giờ thực hiện công việc!',
+      });
+    }
+  };
+
   const fetchTasks = async () => {
     try {
       setLoading(true);
@@ -84,6 +110,52 @@ export const TaskPage: React.FC = () => {
   useEffect(() => {
     fetchTasks();
   }, []);
+
+  // Task Due Date Reminder Polling Engine (checks every 15s)
+  useEffect(() => {
+    if (tasks.length === 0) return;
+
+    const checkReminders = () => {
+      const now = new Date().getTime();
+      const stored = localStorage.getItem('quantum_notified_task_ids');
+      const notifiedIds = new Set<string>(stored ? JSON.parse(stored) : []);
+
+      tasks.forEach((task) => {
+        if (!task.dueDate || task.status === 'DONE' || task.status === 'CANCELLED') return;
+
+        const dueTime = new Date(task.dueDate).getTime();
+        if (isNaN(dueTime)) return;
+
+        const diffInMs = dueTime - now;
+        // Trigger if task due time is within the next 60s or overdue by <= 3 minutes
+        if (diffInMs <= 60000 && diffInMs >= -180000 && !notifiedIds.has(task.id)) {
+          notifiedIds.add(task.id);
+
+          const timeFormatted = formatVietnameseDateTime(task.dueDate);
+          const bodyText = `Đã đến giờ thực hiện (${timeFormatted})${
+            task.description ? `: ${task.description}` : ''
+          }`;
+
+          sendBrowserNotification(`⏰ Nhắc Nhở: ${task.title}`, {
+            body: bodyText,
+          });
+
+          setActiveToast({
+            id: task.id,
+            title: task.title,
+            timeStr: timeFormatted,
+            description: task.description,
+          });
+        }
+      });
+
+      localStorage.setItem('quantum_notified_task_ids', JSON.stringify(Array.from(notifiedIds)));
+    };
+
+    checkReminders();
+    const interval = setInterval(checkReminders, 15000);
+    return () => clearInterval(interval);
+  }, [tasks]);
 
   const handleDateClick = (arg: { dateStr: string }) => {
     setNewTitle('');
@@ -237,9 +309,43 @@ export const TaskPage: React.FC = () => {
 
   return (
     <MainLayout>
-      <div className="space-y-8">
+      <div className="space-y-6">
+        {/* Toast Reminder Alert Banner */}
+        <AnimatePresence>
+          {activeToast && (
+            <motion.div
+              initial={{ opacity: 0, y: -20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.95 }}
+              className="p-4 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-indigo-600 text-white shadow-2xl flex items-center justify-between border border-white/20"
+            >
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-white/20 rounded-xl backdrop-blur-md">
+                  <BellRing className="w-6 h-6 text-white animate-bounce" />
+                </div>
+                <div>
+                  <h4 className="font-extrabold text-sm flex items-center gap-2">
+                    <span>⏰ Đã đến giờ thực hiện công việc!</span>
+                    <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full font-semibold">{activeToast.timeStr}</span>
+                  </h4>
+                  <p className="text-xs font-bold text-amber-100 mt-0.5">{activeToast.title}</p>
+                  {activeToast.description && (
+                    <p className="text-[11px] text-white/80 line-clamp-1">{activeToast.description}</p>
+                  )}
+                </div>
+              </div>
+              <button
+                onClick={() => setActiveToast(null)}
+                className="p-1.5 hover:bg-white/20 rounded-xl transition text-white/80 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Header Hero Banner */}
-        <div className="glass-card p-6 sm:p-8 rounded-3xl relative overflow-hidden flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 border border-white/40 dark:border-slate-800/80">
+        <div className="glass-card p-6 sm:p-8 rounded-3xl relative overflow-hidden flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 border border-white/40 dark:border-slate-800/80">
           <div className="space-y-1 z-10">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-xs font-bold uppercase tracking-wider mb-1">
               <Sparkles className="w-3.5 h-3.5" /> Quản Lý Tiến Độ
@@ -248,11 +354,34 @@ export const TaskPage: React.FC = () => {
               Lịch & Thẻ <span className="text-gradient">Công Việc</span>
             </h1>
             <p className="text-slate-500 dark:text-slate-400 text-sm">
-              Theo dõi lịch làm việc, quản lý các task quan trọng và hoàn thành đúng hạn.
+              Theo dõi lịch làm việc, quản lý các task quan trọng và nhận thông báo nhắc nhở đúng giờ.
             </p>
           </div>
 
-          <div className="z-10 flex items-center gap-3">
+          <div className="z-10 flex flex-wrap items-center gap-3">
+            {/* Browser Reminders Toggle Button */}
+            <button
+              onClick={handleToggleNotificationPermission}
+              className={`px-3.5 py-2.5 rounded-2xl text-xs font-bold flex items-center gap-2 transition border ${
+                notificationPermission === 'granted'
+                  ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
+                  : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 hover:bg-amber-500/20'
+              }`}
+              title="Bật/Tắt thông báo trình duyệt & âm thanh nhắc nhở"
+            >
+              {notificationPermission === 'granted' ? (
+                <>
+                  <BellRing className="w-4 h-4 text-emerald-500 animate-pulse" />
+                  <span>Đã Bật Nhắc Nhở</span>
+                </>
+              ) : (
+                <>
+                  <Bell className="w-4 h-4 text-amber-500" />
+                  <span>Bật Thông Báo</span>
+                </>
+              )}
+            </button>
+
             {/* View Mode Switcher */}
             <div className="flex bg-slate-200/60 dark:bg-slate-800/80 p-1 rounded-2xl border border-slate-300/40 dark:border-slate-700/40">
               <button
