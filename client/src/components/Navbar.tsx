@@ -17,9 +17,9 @@ export const Navbar: React.FC = () => {
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full px-4 pt-4 pb-2">
-      <div className="max-w-7xl mx-auto">
-        <nav className="glass-nav rounded-2xl px-5 py-3 flex items-center justify-between shadow-lg shadow-indigo-500/5 transition-all duration-300 border border-white/40 dark:border-slate-800/80">
+    <header className="sticky top-0 z-40 w-full px-3 sm:px-6 lg:px-8 pt-3 sm:pt-4 pb-2">
+      <div className="w-full max-w-[1536px] mx-auto">
+        <nav className="glass-nav rounded-2xl px-4 sm:px-6 py-3 flex items-center justify-between shadow-lg shadow-indigo-500/5 transition-all duration-300 border border-slate-200/80 dark:border-slate-800/80">
           
           {/* Logo & Brand */}
           <Link to="/" className="flex items-center space-x-3 group">

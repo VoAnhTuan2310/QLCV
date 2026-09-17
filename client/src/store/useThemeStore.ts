@@ -14,8 +14,17 @@ const getInitialTheme = (): boolean => {
   return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
 };
 
+const initialDark = getInitialTheme();
+if (typeof document !== 'undefined') {
+  if (initialDark) {
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+  }
+}
+
 export const useThemeStore = create<ThemeState>((set) => ({
-  isDarkMode: getInitialTheme(),
+  isDarkMode: initialDark,
   toggleTheme: () =>
     set((state) => {
       const nextMode = !state.isDarkMode;
