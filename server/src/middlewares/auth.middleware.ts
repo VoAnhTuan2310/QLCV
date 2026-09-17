@@ -8,6 +8,8 @@ interface JwtPayload {
   role: string;
 }
 
+const JWT_SECRET = process.env.JWT_SECRET || 'quantum-flow-secret-key-2026';
+
 export const authenticate = (req: Request, _res: Response, next: NextFunction): void => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -15,14 +17,9 @@ export const authenticate = (req: Request, _res: Response, next: NextFunction): 
   }
 
   const token = authHeader.split(' ')[1];
-  const jwtSecret = process.env.JWT_SECRET;
-
-  if (!jwtSecret) {
-    return next(new ApiError(500, 'Internal Server Error: JWT configuration missing'));
-  }
 
   try {
-    const decoded = jwt.verify(token, jwtSecret) as JwtPayload;
+    const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
     req.user = {
       id: decoded.id,
       email: decoded.email,

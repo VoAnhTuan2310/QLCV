@@ -108,22 +108,40 @@
 .fc {
   --fc-border-color: rgba(226, 232, 240, 0.8);
   --fc-page-bg-color: transparent;
+  color: #0f172a !important;
+}
+
+.fc .fc-toolbar-title {
+  color: #0f172a !important;
+  font-size: 1.25rem !important;
+  font-weight: 800 !important;
+}
+
+.fc-col-header-cell-cushion,
+.fc-daygrid-day-number {
+  color: #1e293b !important;
+  font-weight: 700 !important;
+  text-decoration: none !important;
 }
 
 .dark .fc {
   --fc-border-color: rgba(51, 65, 85, 0.6);
   --fc-neutral-bg-color: rgba(30, 41, 59, 0.5);
   --fc-list-event-hover-bg-color: rgba(51, 65, 85, 0.8);
-  color: #f8fafc;
+  color: #f8fafc !important;
+}
+
+.dark .fc .fc-toolbar-title {
+  color: #f8fafc !important;
+}
+
+.dark .fc-col-header-cell-cushion,
+.dark .fc-daygrid-day-number {
+  color: #cbd5e1 !important;
 }
 
 .fc-theme-standard td, .fc-theme-standard th {
   border-color: var(--fc-border-color) !important;
-}
-
-.fc .fc-toolbar-title {
-  font-size: 1.25rem !important;
-  font-weight: 800 !important;
 }
 
 .fc .fc-button-primary {
