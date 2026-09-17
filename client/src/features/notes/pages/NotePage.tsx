@@ -21,6 +21,14 @@ const COLOR_OPTIONS = [
   { name: 'Tím Mộng', bg: 'bg-purple-100 dark:bg-purple-950/70', border: 'border-purple-300 dark:border-purple-800', value: '#f3e8ff' },
 ];
 
+const getNoteCardClasses = (colorValue?: string) => {
+  const matched = COLOR_OPTIONS.find((c) => c.value === colorValue);
+  if (matched && matched.value !== 'default') {
+    return `${matched.bg} ${matched.border} backdrop-blur-xl shadow-md`;
+  }
+  return 'glass-card';
+};
+
 export const NotePage: React.FC = () => {
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -142,7 +150,7 @@ export const NotePage: React.FC = () => {
         </div>
 
         {/* Add New Note Box */}
-        <div className="glass-card p-6 sm:p-8 rounded-3xl max-w-2xl mx-auto border border-white/40 dark:border-slate-800/80 shadow-xl">
+        <div className={`p-6 sm:p-8 rounded-3xl max-w-2xl mx-auto border transition-all duration-300 shadow-xl ${getNoteCardClasses(selectedColor)}`}>
           <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
             <StickyNote className="w-5 h-5 text-amber-500" />
             <span>Tạo Ghi Chú Mới</span>
@@ -219,7 +227,9 @@ export const NotePage: React.FC = () => {
                     exit={{ opacity: 0, scale: 0.9 }}
                     whileHover={{ y: -5, scale: 1.02 }}
                     transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                    className="glass-card p-6 rounded-3xl border border-white/40 dark:border-slate-800/80 shadow-md flex flex-col justify-between group relative overflow-hidden transition-all duration-300"
+                    className={`p-6 rounded-3xl border flex flex-col justify-between group relative overflow-hidden transition-all duration-300 ${getNoteCardClasses(
+                      note.color
+                    )}`}
                   >
                     <div className="space-y-2">
                       <div className="flex justify-between items-start">
