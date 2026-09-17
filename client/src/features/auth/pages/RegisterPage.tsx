@@ -42,24 +42,24 @@ export const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-slate-950 p-4 overflow-hidden text-slate-100">
+    <div className="relative min-h-screen flex items-center justify-center bg-slate-100 dark:bg-[#0b0f19] p-4 overflow-hidden text-slate-900 dark:text-slate-100 transition-colors duration-300">
       {/* Ambient Glow Background Orbs */}
-      <div className="bg-blob-emerald -top-20 -right-20 opacity-60 animate-pulse pointer-events-none" />
-      <div className="bg-blob-indigo -bottom-20 -left-20 opacity-50 animate-pulse pointer-events-none" />
+      <div className="bg-blob-emerald -top-20 -right-20 opacity-50 dark:opacity-40 animate-pulse pointer-events-none" />
+      <div className="bg-blob-indigo -bottom-20 -left-20 opacity-40 dark:opacity-30 animate-pulse pointer-events-none" />
 
       {/* Theme Toggle Button */}
       <button
         onClick={toggleTheme}
-        className="absolute top-6 right-6 p-3 rounded-2xl bg-white/10 dark:bg-slate-800/80 backdrop-blur-xl border border-white/20 text-white hover:scale-110 transition duration-300 z-20"
+        className="absolute top-6 right-6 p-3 rounded-2xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:scale-110 shadow-sm transition duration-300 z-20"
       >
-        {isDarkMode ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5 text-indigo-400" />}
+        {isDarkMode ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5 text-indigo-600" />}
       </button>
 
       <motion.div
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.4, ease: 'easeOut' }}
-        className="relative z-10 max-w-md w-full glass-card p-8 sm:p-10 rounded-3xl border border-white/20 shadow-2xl"
+        className="relative z-10 max-w-md w-full glass-card p-8 sm:p-10 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-2xl"
       >
         {/* Brand Header */}
         <div className="text-center mb-8">
@@ -68,10 +68,10 @@ export const RegisterPage: React.FC = () => {
               <Sparkles className="w-7 h-7 text-emerald-400" />
             </div>
           </div>
-          <h1 className="text-3xl font-black tracking-tight text-white">
+          <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">
             Khởi Tạo <span className="text-gradient-emerald">Tài Khoản</span>
           </h1>
-          <p className="text-slate-400 text-xs mt-2 font-medium">
+          <p className="text-slate-500 dark:text-slate-400 text-xs mt-2 font-medium">
             Tạo tài khoản để trải nghiệm toàn bộ tiện ích Quản lý
           </p>
         </div>
