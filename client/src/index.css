@@ -10,7 +10,7 @@
       sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    @apply bg-slate-950 text-slate-100 transition-colors duration-300 min-h-screen overflow-x-hidden selection:bg-indigo-500 selection:text-white;
+    @apply bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 min-h-screen overflow-x-hidden selection:bg-indigo-500 selection:text-white;
   }
 }
 
@@ -106,8 +106,9 @@
 
 /* FullCalendar Styling Tweaks for Dark/Light Mode */
 .fc {
-  --fc-border-color: rgba(226, 232, 240, 0.8);
+  --fc-border-color: rgba(203, 213, 225, 0.6);
   --fc-page-bg-color: transparent;
+  --fc-neutral-bg-color: rgba(241, 245, 249, 0.5);
   color: #0f172a !important;
 }
 
@@ -117,27 +118,48 @@
   font-weight: 800 !important;
 }
 
-.fc-col-header-cell-cushion,
+.fc-col-header-cell-cushion {
+  color: #334155 !important;
+  font-weight: 700 !important;
+  text-decoration: none !important;
+  padding: 8px 4px !important;
+}
+
 .fc-daygrid-day-number {
   color: #1e293b !important;
   font-weight: 700 !important;
   text-decoration: none !important;
+  padding: 4px 8px !important;
 }
 
+.fc-day-other .fc-daygrid-day-number {
+  color: #94a3b8 !important;
+  opacity: 0.6;
+}
+
+/* Dark Mode FullCalendar Adjustments */
 .dark .fc {
   --fc-border-color: rgba(51, 65, 85, 0.6);
   --fc-neutral-bg-color: rgba(30, 41, 59, 0.5);
-  --fc-list-event-hover-bg-color: rgba(51, 65, 85, 0.8);
+  --fc-page-bg-color: transparent;
   color: #f8fafc !important;
 }
 
 .dark .fc .fc-toolbar-title {
-  color: #f8fafc !important;
+  color: #ffffff !important;
 }
 
-.dark .fc-col-header-cell-cushion,
+.dark .fc-col-header-cell-cushion {
+  color: #e2e8f0 !important;
+}
+
 .dark .fc-daygrid-day-number {
   color: #cbd5e1 !important;
+}
+
+.dark .fc-day-other .fc-daygrid-day-number {
+  color: #64748b !important;
+  opacity: 0.5;
 }
 
 .fc-theme-standard td, .fc-theme-standard th {
