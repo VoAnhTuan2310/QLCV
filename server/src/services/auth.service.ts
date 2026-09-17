@@ -54,6 +54,17 @@ export const registerUser = async (input: RegisterInput): Promise<AuthResponse> 
     },
   });
 
+  // 3.5 Auto-seed default finance categories for new user
+  await prisma.category.createMany({
+    data: [
+      { name: 'Ăn Uống / Chi Tiêu', type: 'EXPENSE', userId: user.id },
+      { name: 'Lương / Thu Nhập', type: 'INCOME', userId: user.id },
+      { name: 'Di Chuyển / Xe Cộ', type: 'EXPENSE', userId: user.id },
+      { name: 'Mua Sắm', type: 'EXPENSE', userId: user.id },
+      { name: 'Thu Nhập Khác', type: 'INCOME', userId: user.id },
+    ],
+  });
+
   // 4. Generate token
   const token = generateToken(user.id, user.email, user.role);
 

@@ -136,6 +136,30 @@ export const FinancePage: React.FC = () => {
     }
   };
 
+  const handleTypeChange = async (newType: 'INCOME' | 'EXPENSE') => {
+    setType(newType);
+    let currentCats = categories;
+    if (currentCats.length === 0) {
+      currentCats = await fetchCategories();
+    }
+    const matchingCats = currentCats.filter((c) => c.type === newType);
+    if (matchingCats.length > 0) {
+      setCategoryId(matchingCats[0].id);
+    } else {
+      try {
+        const defaultCatRes = await api.post('/finance/categories', {
+          name: newType === 'INCOME' ? 'Lương / Thu Nhập' : 'Ăn Uống / Chi Tiêu',
+          type: newType,
+        });
+        const newCat = defaultCatRes.data.data;
+        setCategories((prev) => [...prev, newCat]);
+        setCategoryId(newCat.id);
+      } catch (err) {
+        console.error('Lỗi tạo danh mục', err);
+      }
+    }
+  };
+
   const handleOpenEditModal = (tx: Transaction) => {
     setEditFormError(null);
     setEditTxId(tx.id);
@@ -351,9 +375,9 @@ export const FinancePage: React.FC = () => {
                     onChange={(e) => setFilterType(e.target.value as any)}
                     className="glass-input px-3 py-2 text-sm font-semibold"
                   >
-                    <option value="ALL">Tất cả loại</option>
-                    <option value="INCOME">Thu Nhập (+)</option>
-                    <option value="EXPENSE">Chi Tiêu (-)</option>
+                    <option value="ALL" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Tất cả loại</option>
+                    <option value="INCOME" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Thu Nhập (+)</option>
+                    <option value="EXPENSE" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Chi Tiêu (-)</option>
                   </select>
                 </div>
               </div>
@@ -490,16 +514,11 @@ export const FinancePage: React.FC = () => {
                     </label>
                     <select
                       value={type}
-                      onChange={(e) => {
-                        const newType = e.target.value as 'INCOME' | 'EXPENSE';
-                        setType(newType);
-                        const matchingCats = categories.filter((c) => c.type === newType);
-                        if (matchingCats.length > 0) setCategoryId(matchingCats[0].id);
-                      }}
+                      onChange={(e) => handleTypeChange(e.target.value as any)}
                       className="glass-input w-full px-4 py-2.5 text-sm font-semibold"
                     >
-                      <option value="EXPENSE">Chi Tiêu (-)</option>
-                      <option value="INCOME">Thu Nhập (+)</option>
+                      <option value="EXPENSE" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Chi Tiêu (-)</option>
+                      <option value="INCOME" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Thu Nhập (+)</option>
                     </select>
                   </div>
 
@@ -529,7 +548,7 @@ export const FinancePage: React.FC = () => {
                       {categories
                         .filter((c) => c.type === type)
                         .map((cat) => (
-                          <option key={cat.id} value={cat.id}>
+                          <option key={cat.id} value={cat.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-medium py-1">
                             {cat.name}
                           </option>
                         ))}
@@ -616,8 +635,8 @@ export const FinancePage: React.FC = () => {
                       }}
                       className="glass-input w-full px-4 py-2.5 text-sm font-semibold"
                     >
-                      <option value="EXPENSE">Chi Tiêu (-)</option>
-                      <option value="INCOME">Thu Nhập (+)</option>
+                      <option value="EXPENSE" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Chi Tiêu (-)</option>
+                      <option value="INCOME" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Thu Nhập (+)</option>
                     </select>
                   </div>
 
@@ -646,7 +665,7 @@ export const FinancePage: React.FC = () => {
                       {categories
                         .filter((c) => c.type === editType)
                         .map((cat) => (
-                          <option key={cat.id} value={cat.id}>
+                          <option key={cat.id} value={cat.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-medium py-1">
                             {cat.name}
                           </option>
                         ))}
